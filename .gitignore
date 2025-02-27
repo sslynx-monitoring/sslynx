@@ -1,0 +1,3 @@
+# SMS Ignored files
+.env
+backend/.env

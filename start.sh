@@ -19,9 +19,11 @@ env_file=".env"
 if [ ! -f "$env_file" ]; then
     echo "Creating .env file..."
     cat <<EOL > .env
-EMAIL_USER="your-email@gmail.com"
-EMAIL_PASS="your-password"
-ALERT_RECIPIENT="recipient-email@example.com"
+# .env file
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-email-password
+ALERT_RECIPIENT=recipient-email@example.com
+DOMAINS=example.com,anotherdomain.com
 EOL
     echo "Please update .env with your actual credentials."
 fi
@@ -59,4 +61,11 @@ sudo systemctl daemon-reload
 sudo systemctl enable ssl_monitor
 sudo systemctl start ssl_monitor
 
+echo 
+echo
+echo "!!!! ---- Please update .env with your actual credentials. ---- !!!!"
 echo "Setup complete! SSLynx is now running and will check SSL certificates automatically."
+echo "To check the status of the service, run: sudo systemctl status ssl_monitor"
+echo "To view logs, run: journalctl -u ssl_monitor -e"
+echo "To restart the service, run: sudo systemctl restart ssl_monitor"
+echo "To stop the service, run: sudo systemctl stop ssl_monitor"

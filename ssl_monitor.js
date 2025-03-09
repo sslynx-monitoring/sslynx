@@ -64,10 +64,10 @@ function checkSSL(domain) {
 }
 
 // Function to send email alert with HTML content
-function sendEmailAlert(domain, expirationDate) {
+function sendEmailAlert(domain, expirationDate, testEmail = null) {
     const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: process.env.ALERT_RECIPIENT,
+        to: testEmail || process.env.ALERT_RECIPIENT,  // Use testEmail if provided, otherwise use the default recipient
         subject: `SSL Certificate Expiry Alert for ${domain}`,
         html: fs.readFileSync(path.join(__dirname, 'email_template.html'), 'utf8')
             .replace('{{domain}}', domain)
@@ -85,8 +85,10 @@ function sendEmailAlert(domain, expirationDate) {
     });
 }
 
+// Load domains from .env
+const domains = process.env.DOMAINS.split(',');
+
 // Example usage
-const domains = ['example.com', 'anotherdomain.com'];
 domains.forEach(checkSSL);
 
 // Run checks periodically
@@ -103,15 +105,7 @@ if (args[0] === '/test' && args[1] && args[2]) {
 
     console.log(`Running test for domain: ${testDomain}`);
     checkSSL(testDomain);
-    transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: testEmail,
-        subject: `SSL Test Alert for ${testDomain}`,
-        text: `Test alert for domain: ${testDomain}`
-    }, (err, info) => {
-        if (err) console.error('Test email sending failed:', err);
-        else console.log('Test email sent:', info.response);
-    });
+    sendEmailAlert(testDomain, new Date(), testEmail);  // Use the HTML template for the test email
 } else {
     console.log('Usage: node ssl_monitor.js /test "domain.com" "sendtoemail@mail.com"');
 }

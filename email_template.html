@@ -3,87 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SSL Expiry Alert</title>
+    <title>SSL Certificate Expiry Alert</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
             color: #333;
-            background-color: #f7f7f7;
             margin: 0;
             padding: 0;
         }
         .container {
-            width: 80%;
-            max-width: 600px;
-            margin: 0 auto;
+            width: 600px;
+            margin: 20px auto;
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         h1 {
-            font-size: 24px;
-            color: #2a9d8f;
+            text-align: center;
+            color: #333;
         }
-        p {
-            font-size: 16px;
-            line-height: 1.6;
+        .alert {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 20px 0;
+            color: #fff;
         }
-        .strong {
-            font-weight: bold;
+        .alert.warning {
+            background-color: #ffcc00;
+        }
+        .alert.danger {
+            background-color: #e74c3c;
         }
         .footer {
+            margin-top: 40px;
             text-align: center;
             font-size: 14px;
             color: #777;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
         }
         .footer a {
-            color: #2a9d8f;
+            color: #3498db;
             text-decoration: none;
         }
-        .info-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        .info-table th, .info-table td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-        .info-table th {
-            background-color: #f0f0f0;
+        .footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>SSL Certificate Expiry Alert for <span class="strong">{{domain}}</span></h1>
-        <p>The SSL certificate for <strong>{{domain}}</strong> is expiring on <strong>{{expirationDate}}</strong>.</p>
-        <p>Please take action to renew the certificate before it expires to ensure continued secure connections.</p>
-        
-        <h3>Certificate Details:</h3>
-        <table class="info-table">
+        <h1>SSL Certificate Expiry Alert for {{domain}}</h1>
+        <div class="alert {{alertType}}">
+            <strong>{{alertText}}</strong>
+            <p>The SSL certificate for <strong>{{domain}}</strong> is expiring on <strong>{{expirationDate}}</strong>, which is in <strong>{{daysRemaining}}</strong> days.</p>
+        </div>
+
+        <h2>Certificate Details:</h2>
+        <table>
             <tr>
-                <th>Issuer</th>
+                <td><strong>Issuer:</strong></td>
                 <td>{{issuer}}</td>
             </tr>
             <tr>
-                <th>Subject</th>
+                <td><strong>Subject:</strong></td>
                 <td>{{subject}}</td>
             </tr>
             <tr>
-                <th>Expiration Date</th>
+                <td><strong>Expiration Date:</strong></td>
                 <td>{{expirationDate}}</td>
             </tr>
             <tr>
-                <th>Days Remaining</th>
+                <td><strong>Days Remaining:</strong></td>
                 <td>{{daysRemaining}}</td>
             </tr>
         </table>
+
+        <p>If you have any questions or need assistance, please contact your SSL provider or system administrator.</p>
 
         <div class="footer">
             <p>Created using the FOSS SSLynx SSL Checker <a href="https://github.com/sslynx-monitoring/sslynx" target="_blank">GitHub Page</a>.</p>

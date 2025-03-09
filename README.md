@@ -6,7 +6,7 @@
 2: clone and download the gitrepo: https://github.com/sslynx-monitoring/sslynx.git <br>
 3: cd into sslynx/ and make start.sh executable by running: chmod +x start.sh <br>
 4: run start: ./start.sh <br>
-5: change envirement vars as required imediately in order to avoid errors <br>
+5: change envirement vars as required imediately in order to avoid errors and security reasons (it is recomended to keep this instance on its own seperate server as it will auto open a port to send the email and close after) <br>
 6: should be good to go! <br>
 
 

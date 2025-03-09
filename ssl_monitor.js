@@ -46,7 +46,7 @@ function checkSSL(domain) {
             const expirationISO = expirationDate.toISOString();
             const issuer = cert.issuer ? cert.issuer.O : 'Unknown';
             const subject = cert.subject ? cert.subject.CN : 'Unknown';
-            const daysRemaining = (expirationDate - new Date()) / (1000 * 60 * 60 * 24);
+            const daysRemaining = Math.ceil((expirationDate - new Date()) / (1000 * 60 * 60 * 24));
             
             console.log(`${domain} SSL expires on:`, expirationDate);
             logMessage(`${domain} SSL expires on: ${expirationISO}`);
@@ -106,9 +106,8 @@ setInterval(() => {
     domains.forEach(checkSSL);
 }, 24 * 60 * 60 * 1000); // Every 24 hours
 
-
+// Test mode logic
 const args = process.argv.slice(2);
-
 if (args[0] === '/test' && args[1] && args[2]) {
     const testDomain = args[1];
     const testEmail = args[2];

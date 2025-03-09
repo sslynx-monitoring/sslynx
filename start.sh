@@ -28,15 +28,13 @@ fi
 
 
 # Create database file if it doesn't exist
+# Run initial database setup
+echo "Initializing database..."
 db_file="ssl_monitor.db"
 if [ ! -f "$db_file" ]; then
     echo "Creating database file..."
     touch ssl_monitor.db
 fi
-
-# Run initial database setup
-echo "Initializing database..."
-node -e "require('./ssl_monitor.js')"
 
 # Create a systemd service for auto-running SSLynx
 echo "Setting up systemd service..."

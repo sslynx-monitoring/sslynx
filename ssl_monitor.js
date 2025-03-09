@@ -76,16 +76,14 @@ function checkSSL(domain) {
 function sendEmailAlert(domain, expirationDate, issuer, subject, daysRemaining) {
     const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER,
-        subject: `SSL Alert for ${domain}`,
+        to: process.env.ALERT_RECIPIENT,
+        subject: `SSL Certificate Expiry Alert for ${domain}`,
         html: fs.readFileSync(path.join(__dirname, 'email_template.html'), 'utf8')
             .replace('{{domain}}', domain)
-            .replace('{{expirationDate}}', expirationDate.toDateString())
+            .replace('{{expirationDate}}', expirationDate.toLocaleString())
             .replace('{{issuer}}', issuer)
             .replace('{{subject}}', subject)
             .replace('{{daysRemaining}}', daysRemaining)
-            .replace('{{alertType}}', daysRemaining <= 0 ? 'danger' : 'warning')
-            .replace('{{alertText}}', daysRemaining <= 0 ? 'Expired' : 'Expiring Soon')
     };
 
     transporter.sendMail(mailOptions, (err, info) => {

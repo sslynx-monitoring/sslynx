@@ -20,9 +20,9 @@ if [ ! -f "$env_file" ]; then
     echo "Creating .env file..."
     cat <<EOL > .env
 # .env file
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-email-password
-ALERT_RECIPIENT=recipient-email@example.com
+EMAIL_USER=
+EMAIL_PASS=
+ALERT_RECIPIENT=
 DOMAINS=example.com,anotherdomain.com
 EOL
     echo "Please update .env with your actual credentials."

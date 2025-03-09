@@ -31,7 +31,7 @@ fi
 db_file="ssl_monitor.db"
 if [ ! -f "$db_file" ]; then
     echo "Creating database file..."
-    sqlite3 ssl_monitor.db < schema.sql
+    touch ssl_monitor.db
 fi
 
 # Run initial database setup

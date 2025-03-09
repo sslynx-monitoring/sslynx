@@ -48,6 +48,7 @@ function checkSSL(domain) {
             const issuer = cert.issuer ? cert.issuer.O : 'Unknown';
             const subject = cert.subject ? cert.subject.CN : 'Unknown';
             const daysIssued = Math.ceil((new Date() - new Date(cert.valid_from)) / (1000 * 60 * 60 * 24));
+            const dateIssued = new Date(cert.valid_from);
             const daysRemaining = Math.ceil((expirationDate - new Date()) / (1000 * 60 * 60 * 24));
             const daysWarning = parseInt(process.env.EXPIRY_WARNING_DAYS) || 30;
             const alertThreshold = parseInt(process.env.ALERT_THRESHOLD_DAYS) || 7;
@@ -72,19 +73,14 @@ function checkSSL(domain) {
                     ON CONFLICT(domain) DO UPDATE SET expiration_date = excluded.expiration_date, last_checked = CURRENT_TIMESTAMP`, 
                     [domain, expirationISO]);
 
-                if (daysRemaining <= daysWarning && !alertSent) {
-                    sendEmailAlert(domain, expirationDate, issuer, subject, daysRemaining);
-                    db.run(`UPDATE ssl_checks SET alert_sent = 1 WHERE domain = ?`, [domain]);
-                }
-
                 if (daysRemaining <= 30 && daysRemaining > 15) {
-                    sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent);
+                    sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent, dateIssued);
                 } else if (daysRemaining <= 15 && daysRemaining > 7) {
-                    sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent);
+                    sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent, dateIssued);
                 } else if (daysRemaining <= 7 && daysRemaining > 0) {
-                    sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent);
+                    sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent, dateIssued);
                 } else if (daysRemaining <= 0) {
-                    sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent);
+                    sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent, dateIssued);
                 }
             
 
@@ -111,7 +107,7 @@ Valid To	3/26/2025, 11:59:59 PM
 If you have any questions or need assistance, please contact your SSL provider or system administrator.
 
 */
-function sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent) {
+function sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent, dateIssued) {
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: process.env.ALERT_RECIPIENT,
@@ -122,7 +118,7 @@ function sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, day
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>SSL Expiry Alert</title>
+                <title>SSL Expiry Alert for ${domain}</title>
             </head>
             <body style="font-family: Arial, sans-serif; color: #333; background-color: #f7f7f7; margin: 0; padding: 0;">
                 <div style="width: 80%; max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
@@ -152,20 +148,20 @@ function sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, day
                             <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${daysRemaining}</td>
                         </tr>
                         <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left; background-color: #f0f0f0;">Valid From:</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${dateIssued}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left; background-color: #f0f0f0;">Valid To:</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${expirationDate}</td>
+                        </tr>
+                        <tr>
                             <td style="padding: 10px; border: 1px solid #ddd; text-align: left; background-color: #f0f0f0;">Days Warning:</td>
                             <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${daysWarning}</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #ddd; text-align: left; background-color: #f0f0f0;">Alert Threshold:</td>
                             <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${alertThreshold}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left; background-color: #f0f0f0;">Valid From:</td>
-                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${expirationDate}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left; background-color: #f0f0f0;">Valid To:</td>
-                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${expirationDate}</td>
                         </tr>
                     </table>
                     
@@ -186,10 +182,6 @@ function sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, day
         else console.log('Email sent:', info.response);
     });
 }
-
-// Example usage
-const domains = process.env.SSL_DOMAINS ? process.env.SSL_DOMAINS.split(',') : [];
-domains.forEach(checkSSL);
 
 // Run checks periodically
 setInterval(() => {

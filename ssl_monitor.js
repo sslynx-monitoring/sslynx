@@ -44,6 +44,10 @@ function checkSSL(domain) {
         if (cert && cert.valid_to) {
             const expirationDate = new Date(cert.valid_to);
             const expirationISO = expirationDate.toISOString();
+            const issuer = cert.issuer ? cert.issuer.O : 'Unknown';
+            const subject = cert.subject ? cert.subject.CN : 'Unknown';
+            const daysRemaining = (expirationDate - new Date()) / (1000 * 60 * 60 * 24);
+            
             console.log(`${domain} SSL expires on:`, expirationDate);
             logMessage(`${domain} SSL expires on: ${expirationISO}`);
             
@@ -51,10 +55,15 @@ function checkSSL(domain) {
                    ON CONFLICT(domain) DO UPDATE SET expiration_date = excluded.expiration_date, last_checked = CURRENT_TIMESTAMP`, 
                    [domain, expirationISO]);
 
-            // Send alert if certificate is expiring soon
-            const daysRemaining = (expirationDate - new Date()) / (1000 * 60 * 60 * 24);
-            if (daysRemaining < 15) {
-                sendEmailAlert(domain, expirationDate);
+            // Send email alerts based on the days remaining
+            if (daysRemaining <= 30 && daysRemaining > 15) {
+                sendEmailAlert(domain, expirationDate, issuer, subject, daysRemaining);
+            } else if (daysRemaining <= 15 && daysRemaining > 5) {
+                sendEmailAlert(domain, expirationDate, issuer, subject, daysRemaining);
+            } else if (daysRemaining <= 5 && daysRemaining > 0) {
+                sendEmailAlert(domain, expirationDate, issuer, subject, daysRemaining);
+            } else if (daysRemaining <= 0) {
+                sendEmailAlert(domain, expirationDate, issuer, subject, daysRemaining);
             }
         }
     }).on('error', (err) => {
@@ -64,14 +73,17 @@ function checkSSL(domain) {
 }
 
 // Function to send email alert with HTML content
-function sendEmailAlert(domain, expirationDate, testEmail = null) {
+function sendEmailAlert(domain, expirationDate, issuer, subject, daysRemaining) {
     const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: testEmail || process.env.ALERT_RECIPIENT,  // Use testEmail if provided, otherwise use the default recipient
+        to: process.env.ALERT_RECIPIENT,
         subject: `SSL Certificate Expiry Alert for ${domain}`,
         html: fs.readFileSync(path.join(__dirname, 'email_template.html'), 'utf8')
             .replace('{{domain}}', domain)
-            .replace('{{expirationDate}}', expirationDate)
+            .replace('{{expirationDate}}', expirationDate.toLocaleString())
+            .replace('{{issuer}}', issuer)
+            .replace('{{subject}}', subject)
+            .replace('{{daysRemaining}}', daysRemaining)
     };
 
     transporter.sendMail(mailOptions, (err, info) => {
@@ -85,10 +97,8 @@ function sendEmailAlert(domain, expirationDate, testEmail = null) {
     });
 }
 
-// Load domains from .env
-const domains = process.env.DOMAINS.split(',');
-
 // Example usage
+const domains = process.env.SSL_DOMAINS ? process.env.SSL_DOMAINS.split(',') : ['example.com'];
 domains.forEach(checkSSL);
 
 // Run checks periodically
@@ -105,7 +115,20 @@ if (args[0] === '/test' && args[1] && args[2]) {
 
     console.log(`Running test for domain: ${testDomain}`);
     checkSSL(testDomain);
-    sendEmailAlert(testDomain, new Date(), testEmail);  // Use the HTML template for the test email
+    transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: testEmail,
+        subject: `SSL Test Alert for ${testDomain}`,
+        html: fs.readFileSync(path.join(__dirname, 'email_template.html'), 'utf8')
+            .replace('{{domain}}', testDomain)
+            .replace('{{expirationDate}}', 'Test Date')
+            .replace('{{issuer}}', 'Test Issuer')
+            .replace('{{subject}}', 'Test Subject')
+            .replace('{{daysRemaining}}', 'N/A')
+    }, (err, info) => {
+        if (err) console.error('Test email sending failed:', err);
+        else console.log('Test email sent:', info.response);
+    });
 } else {
     console.log('Usage: node ssl_monitor.js /test "domain.com" "sendtoemail@mail.com"');
 }

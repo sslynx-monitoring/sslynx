@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSL Monitor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>SSL Certificate Status</h1>
+    <table id="ssl-table">
+        <thead>
+            <tr>
+                <th>Domain</th>
+                <th>Expiration Date</th>
+                <th>Last Checked</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be populated here -->
+        </tbody>
+    </table>
+
+    <script>
+        fetch('/api/ssl-status')
+            .then(response => response.json())
+            .then(data => {
+                const table = document.getElementById('ssl-table').getElementsByTagName('tbody')[0];
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${row.domain}</td><td>${row.expiration_date}</td><td>${row.last_checked}</td>`;
+                    table.appendChild(tr);
+                });
+            });
+    </script>
+</body>
+</html>

@@ -183,13 +183,15 @@ function sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, day
     });
 }
 
+const domains = process.env.SSL_DOMAINS ? process.env.SSL_DOMAINS.split(',') : ['example.com'];
+domains.forEach(checkSSL);
+
+
 // Run checks periodically
 setInterval(() => {
     domains.forEach(checkSSL);
 }, 24 * 60 * 60 * 1000); // Every 24 hours
 
-
-//for /test
 const args = process.argv.slice(2);
 if (args[0] === '/test' && args[1] && args[2]) {
     const testDomain = args[1];

@@ -56,6 +56,16 @@ function checkSSL(domain) {
              // check if user did /test, cmd format would look like: /test "domain" "sendtoemail@email.com"
             if (!process.argv[0] === '/test') {
 
+                args2email = process.argv[2];
+                if (args2email) {
+                    sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent);
+                }
+                console.log(`Domain: ${domain}`);
+                console.log("send email to: " + args2email);
+
+                return;
+            }
+
                 logMessage(`${domain} SSL expires on: ${expirationISO}`);
                 
                 db.run(`INSERT INTO ssl_checks (domain, expiration_date) VALUES (?, ?) 
@@ -76,15 +86,6 @@ function checkSSL(domain) {
                 } else if (daysRemaining <= 0) {
                     sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent);
                 }
-
-            } else {
-                args2email = process.argv[2];
-                if (args2email) {
-                    sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent);
-                }
-                console.log(`Domain: ${domain}`);
-                console.log("send email to: " + args2email);
-            }
             
 
            

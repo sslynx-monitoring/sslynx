@@ -114,60 +114,70 @@ If you have any questions or need assistance, please contact your SSL provider o
 function sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent) {
     const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER,
+        to: process.env.ALERT_RECIPIENT,
         subject: `SSL Certificate Expiry Alert`,
         html: `
-        h1 {
-            font-size: 24px;
-            color: #2a9d8f;
-        }
-        p {
-            font-size: 16px;
-            line-height: 1.6;
-        }
-        .strong {
-            font-weight: bold;
-        }
-        .footer {
-            text-align: center;
-            font-size: 14px;
-            color: #777;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-        }
-        .footer a {
-            color: #2a9d8f;
-            text-decoration: none;
-        }
-        .info-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        .info-table th, .info-table td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-        .info-table th {
-            background-color: #f0f0f0;
-        }
-        <h1>SSL Certificate Expiry Alert for ${domain}</h1>
-        <p> Dear Subscriber, </p>
-        <p>Your SSL certificate for the domain ${domain} is about to expire in ${daysRemaining} days. Please renew your certificate to avoid any service disruption.</p>
-        <table>
-            <tr><td>Domain:</td><td>${domain}</td></tr>
-            <tr><td>Issuer:</td><td>${issuer}</td></tr>
-            <tr><td>Subject CN :</td><td>${subject}</td></tr>
-            <tr><td>Days Issued:</td><td>${daysIssued}</td></tr>
-            <tr><td>Days Remaining:</td><td>${daysRemaining}</td></tr>
-            <tr><td>Days Warning:</td><td>${daysWarning}</td></tr>
-            <tr><td>Alert Threshold:</td><td>${alertThreshold}</td></tr>
-            <tr><td>Valid From:</td><td>${expirationDate}</td></tr>
-            <tr><td>Valid To:</td><td>${expirationDate}</td></tr>
-        </table>
-        <p>If you have any questions or need assistance, please contact your SSL provider or system administrator.</p>
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>SSL Expiry Alert</title>
+            </head>
+            <body style="font-family: Arial, sans-serif; color: #333; background-color: #f7f7f7; margin: 0; padding: 0;">
+                <div style="width: 80%; max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+                    <h1 style="font-size: 24px; color: #2a9d8f;">SSL Certificate Expiry Alert for ${domain}</h1>
+                    <p style="font-size: 16px; line-height: 1.6;">Dear Subscriber,</p>
+                    <p style="font-size: 16px; line-height: 1.6;">Your SSL certificate for the domain ${domain} is about to expire in ${daysRemaining} days. Please renew your certificate to avoid any service disruption.</p>
+                    
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left; background-color: #f0f0f0;">Domain:</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${domain}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left; background-color: #f0f0f0;">Issuer:</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${issuer}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left; background-color: #f0f0f0;">Subject CN:</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${subject}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left; background-color: #f0f0f0;">Days Issued:</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${daysIssued}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left; background-color: #f0f0f0;">Days Remaining:</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${daysRemaining}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left; background-color: #f0f0f0;">Days Warning:</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${daysWarning}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left; background-color: #f0f0f0;">Alert Threshold:</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${alertThreshold}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left; background-color: #f0f0f0;">Valid From:</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${expirationDate}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left; background-color: #f0f0f0;">Valid To:</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${expirationDate}</td>
+                        </tr>
+                    </table>
+                    
+                    <p style="font-size: 16px; line-height: 1.6;">If you have any questions or need assistance, please contact your SSL provider or system administrator.</p>
+
+                    <div style="text-align: center; font-size: 14px; color: #777; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                        <p>Created using the FOSS SSLynx SSL Checker <a href="https://github.com/sslynx-monitoring/sslynx" style="color: #2a9d8f; text-decoration: none;" target="_blank">GitHub Page</a>.</p>
+                        <p>&copy; <script>document.write(new Date().getFullYear())</script> SSLynx. All rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
         `
     };
 

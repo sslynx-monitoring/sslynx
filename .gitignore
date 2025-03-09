@@ -1,4 +1,4 @@
 .env
 /node_modules
 ssl_monitor.db
-ssl_monitor
+ssl_monitor.log

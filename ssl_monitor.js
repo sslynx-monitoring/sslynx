@@ -80,7 +80,7 @@ function sendEmailAlert(domain, expirationDate, issuer, subject, daysRemaining) 
         subject: `SSL Certificate Expiry Alert for ${domain}`,
         html: fs.readFileSync(path.join(__dirname, 'email_template.html'), 'utf8')
             .replace('{{domain}}', domain)
-            .replace('{{expirationDate}}', expirationDate.toLocaleString())
+            .replace('{{expirationDate}}', expirationDate.toLocaleDateString())  // Updated
             .replace('{{issuer}}', issuer)
             .replace('{{subject}}', subject)
             .replace('{{daysRemaining}}', daysRemaining)

@@ -121,13 +121,11 @@ if (args[0] === '/test' && args[1] && args[2]) {
         to: testEmail,
         subject: `SSL Test Alert for ${testDomain}`,
         html: fs.readFileSync(path.join(__dirname, 'email_template.html'), 'utf8')
-        .replace('{{domain}}', domain)
-        .replace('{{expirationDate}}', expirationDate.toDateString())
-        .replace('{{issuer}}', issuer)
-        .replace('{{validFrom}}', cert.valid_from)  // assuming cert.valid_from is available
-        .replace('{{daysRemaining}}', daysRemaining)
-        .replace('{{alertType}}', daysRemaining <= 0 ? 'danger' : 'warning')
-        .replace('{{alertText}}', daysRemaining <= 0 ? 'Expired' : 'Expiring Soon')
+            .replace('{{domain}}', testDomain)
+            .replace('{{expirationDate}}', 'Test Date')
+            .replace('{{issuer}}', 'Test Issuer')
+            .replace('{{subject}}', 'Test Subject')
+            .replace('{{daysRemaining}}', 'N/A')
     }, (err, info) => {
         if (err) console.error('Test email sending failed:', err);
         else console.log('Test email sent:', info.response);

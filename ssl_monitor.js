@@ -3,7 +3,7 @@ const path = require('path');
 const https = require('https');
 const sqlite3 = require('sqlite3').verbose();
 const nodemailer = require('nodemailer');
-const { send } = require('process');
+const { send, argv } = require('process');
 require('dotenv').config();
 
 // Database setup
@@ -55,6 +55,7 @@ function checkSSL(domain) {
             const alertSent = cert.alert_sent === 1;
 
              // check if user did /test, cmd format would look like: /test "domain" "sendtoemail@email.com"
+             /*
             if (!process.argv[0] === '/test') {
 
                 args2email = process.argv[2];
@@ -66,6 +67,8 @@ function checkSSL(domain) {
 
                 return;
             }
+                */
+
 
                 logMessage(`${domain} SSL expires on: ${expirationISO}`);
                 
@@ -81,7 +84,10 @@ function checkSSL(domain) {
                     sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent, dateIssued);
                 } else if (daysRemaining <= 0) {
                     sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent, dateIssued);
+                } else if (daysRemaining <= 30 && argv[0] === '/test') {
+                    sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent, dateIssued);
                 }
+
             
 
            
@@ -181,7 +187,16 @@ function sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, day
         if (err) console.error('Email sending failed:', err);
         else console.log('Email sent:', info.response);
     });
+
+    // after each email wait 2 seconds before sending another email
+    setTimeout(() => {
+        console.log('waiting 2 seconds before sending another email');
+    }, 2000);
 }
+
+const domains = process.env.SSL_DOMAINS ? process.env.SSL_DOMAINS.split(',') : [];
+domains.forEach(checkSSL);
+
 
 // Run checks periodically
 setInterval(() => {
@@ -189,11 +204,56 @@ setInterval(() => {
 }, 24 * 60 * 60 * 1000); // Every 24 hours
 
 
-//for /test
-const args = process.argv.slice(2);
-if (args[0] === '/test' && args[1] && args[2]) {
-    const testDomain = args[1];
-
-    console.log(`Running test for domain: ${testDomain}`);
-    checkSSL(testDomain);
+// Test email alert
+const args = process.argv.slice();
+if (args[0] === '/test') {
+    const domains = process.env.SSL_DOMAINS ? process.env.SSL_DOMAINS.split(',') : [];
+    domains.forEach(testEmail);
 }
+
+function testEmail() {
+    const options = { method: 'GET', agent: new https.Agent({ rejectUnauthorized: false }) };
+    
+    https.get(`https://${domain}`, options, (res) => {
+        const cert = res.socket.getPeerCertificate();
+        if (cert && cert.valid_to) {
+            const expirationDate = new Date(cert.valid_to);
+            const expirationISO = expirationDate.toISOString();
+            const issuer = cert.issuer ? cert.issuer.O : 'Unknown';
+            const subject = cert.subject ? cert.subject.CN : 'Unknown';
+            const daysIssued = Math.ceil((new Date() - new Date(cert.valid_from)) / (1000 * 60 * 60 * 24));
+            const dateIssued = new Date(cert.valid_from);
+            const daysRemaining = Math.ceil((expirationDate - new Date()) / (1000 * 60 * 60 * 24));
+            const daysWarning = parseInt(process.env.EXPIRY_WARNING_DAYS) || 30;
+            const alertThreshold = parseInt(process.env.ALERT_THRESHOLD_DAYS) || 7;
+            const alertSent = cert.alert_sent === 1;
+
+             // check if user did /test, cmd format would look like: /test "domain" "sendtoemail@email.com"
+             /*
+            if (!process.argv[0] === '/test') {
+
+                args2email = process.argv[2];
+                if (args2email) {
+                    sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent);
+                }
+                console.log(`Domain: ${domain}`);
+                console.log("send email to: " + args2email);
+
+                return;
+            }
+                */
+
+
+                    logMessage(`${domain} SSL expires on: ${expirationISO}`);
+                
+                    db.run(`INSERT INTO ssl_checks (domain, expiration_date) VALUES (?, ?) 
+                    ON CONFLICT(domain) DO UPDATE SET expiration_date = excluded.expiration_date, last_checked = CURRENT_TIMESTAMP`, 
+                    [domain, expirationISO]);
+
+                    
+                    sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent);
+                }
+                
+            });
+
+        }

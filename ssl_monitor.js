@@ -69,7 +69,7 @@ function checkSSL(domain) {
             }
                 */
 
-            
+
                 logMessage(`${domain} SSL expires on: ${expirationISO}`);
                 
                 db.run(`INSERT INTO ssl_checks (domain, expiration_date) VALUES (?, ?) 
@@ -203,10 +203,8 @@ setInterval(() => {
     domains.forEach(checkSSL);
 }, 24 * 60 * 60 * 1000); // Every 24 hours
 
-const args = process.argv.slice(2);
-if (args[0] === '/test' && args[1] && args[2]) {
-    const testDomain = args[1];
-
-    console.log(`Running test for domain: ${testDomain}`);
-    checkSSL(testDomain);
+const args = process.argv.slice();
+if (args[0] === '/test') {
+    const domains = process.env.SSL_DOMAINS ? process.env.SSL_DOMAINS.split(',') : [];
+    domains.forEach(checkSSL);
 }

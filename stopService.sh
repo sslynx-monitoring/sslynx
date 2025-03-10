@@ -6,7 +6,7 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-SERVICE_NAME="sslynx"
+SERVICE_NAME="ssl_monitor"
 SERVICE_PATH="/etc/systemd/system/${SERVICE_NAME}.service"
 INSTALL_PATH="/etc/sslynx"
 

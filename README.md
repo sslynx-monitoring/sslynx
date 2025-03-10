@@ -15,3 +15,7 @@
 2: run the cmd: node ssl_monitor.js /test "domain" <br>
 3: wait for the script to say email sent, then ctrl + c out <br>
 (resolve any error if needed) <br>
+
+## For Dev Staging and UAT Daily Builds
+UAT: git clone https://github.com/sslynx-monitoring/sslynx.git && cd sslynx/ && git checkout uat && chmod +x start.sh && ./start.sh <br>
+DEV: git clone https://github.com/sslynx-monitoring/sslynx.git && cd sslynx/ && git checkout dev && chmod +x start.sh && ./start.sh <br>

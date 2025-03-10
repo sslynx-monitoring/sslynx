@@ -3,7 +3,7 @@ const path = require('path');
 const https = require('https');
 const sqlite3 = require('sqlite3').verbose();
 const nodemailer = require('nodemailer');
-const { send } = require('process');
+const { send, argv } = require('process');
 require('dotenv').config();
 
 // Database setup
@@ -55,6 +55,7 @@ function checkSSL(domain) {
             const alertSent = cert.alert_sent === 1;
 
              // check if user did /test, cmd format would look like: /test "domain" "sendtoemail@email.com"
+             /*
             if (!process.argv[0] === '/test') {
 
                 args2email = process.argv[2];
@@ -66,7 +67,9 @@ function checkSSL(domain) {
 
                 return;
             }
+                */
 
+            
                 logMessage(`${domain} SSL expires on: ${expirationISO}`);
                 
                 db.run(`INSERT INTO ssl_checks (domain, expiration_date) VALUES (?, ?) 
@@ -81,7 +84,10 @@ function checkSSL(domain) {
                     sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent, dateIssued);
                 } else if (daysRemaining <= 0) {
                     sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent, dateIssued);
+                } else if (daysRemaining <= 30 && argv[0] === '/test') {
+                    sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, daysRemaining, daysWarning, alertThreshold, alertSent, dateIssued);
                 }
+
             
 
            
@@ -181,9 +187,14 @@ function sendEmailAlert(domain, expirationDate, issuer, subject, daysIssued, day
         if (err) console.error('Email sending failed:', err);
         else console.log('Email sent:', info.response);
     });
+
+    // after each email wait 2 seconds before sending another email
+    setTimeout(() => {
+        console.log('waiting 2 seconds before sending another email');
+    }, 2000);
 }
 
-const domains = process.env.SSL_DOMAINS ? process.env.SSL_DOMAINS.split(',') : ['example.com'];
+const domains = process.env.SSL_DOMAINS ? process.env.SSL_DOMAINS.split(',') : [];
 domains.forEach(checkSSL);
 
 

@@ -8,7 +8,6 @@ fi
 
 SERVICE_NAME="ssl_monitor"
 SERVICE_PATH="/etc/systemd/system/${SERVICE_NAME}.service"
-INSTALL_PATH="/etc/sslynx"
 
 echo "Stopping and disabling the service..."
 systemctl stop "$SERVICE_NAME"
@@ -19,9 +18,6 @@ rm -f "$SERVICE_PATH"
 
 echo "Reloading systemd daemon..."
 systemctl daemon-reload
-
-echo "Removing SSLynx installation directory..."
-rm -rf "$INSTALL_PATH"
 
 echo "Removing logs..."
 rm -f /var/log/${SERVICE_NAME}.log
